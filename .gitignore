@@ -1,0 +1,3 @@
+.venv/
+webhook.log
+__pycache__
