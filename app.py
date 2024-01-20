@@ -19,17 +19,20 @@ def index():
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
 
-    app.logger.debug('Signature created by Polar : ' + request.headers.get('Polar-Webhook-Signature'))
-    API_SECRET_KEY = '74b4b6e6-4a31-4f6a-975b-4ed73d94a68a'
-    digest = hmac.new(API_SECRET_KEY.encode('utf-8'), request.get_data(), digestmod=hashlib.sha256).digest()
-    app.logger.debug('Calculated signature       : ' + digest.hex())	
-	
-    verified = verify_webhook(request.get_data(), request.headers.get('Polar-Webhook-Signature'))
+    polarsignature = request.headers.get('Polar-Webhook-Signature')
 
-    if verified:
-       app.logger.debug('Webhook signature check ok')
-    else:
-       app.logger.debug('Webhook signature check failed')
+    if polarsignature is not None:
+        app.logger.debug('Signature created by Polar : ' + polarsignature)
+        API_SECRET_KEY = '74b4b6e6-4a31-4f6a-975b-4ed73d94a68a'
+        digest = hmac.new(API_SECRET_KEY.encode('utf-8'), request.get_data(), digestmod=hashlib.sha256).digest()
+        app.logger.debug('Calculated signature       : ' + digest.hex())
+
+        verified = verify_webhook(request.get_data(), request.headers.get('Polar-Webhook-Signature'))
+
+        if verified:
+            app.logger.debug('Webhook signature check ok')
+        else:
+            app.logger.debug('Webhook signature check failed')
 
     token = '237a056de90ec7bfaba89af19302e391'
     headers = {
