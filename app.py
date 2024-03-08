@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, json
+from flask import Flask, render_template, request, json, jsonify, send_from_directory
+from pathlib import Path
 
 import logging, requests
 import hmac, hashlib, base64
@@ -11,6 +12,10 @@ def verify_webhook(data, hmac_header):
     computed_hmac = digest.hex().encode('utf-8')
 
     return hmac.compare_digest(computed_hmac, hmac_header.encode('utf-8'))
+
+#@app.route('/.well-known/pki-validation/DA2D730BBBED0B95865340FEBCEB8298.txt')
+#def pkivalidate():
+#    return send_from_directory('/home/pi/projects/accesslink/.well-known/pki-validation/', 'DA2D730BBBED0B95865340FEBCEB8298.txt')
 
 @app.route('/')
 def index():
@@ -40,15 +45,20 @@ def webhook():
     };
 
     if request.method == 'GET':
-        app.logger.debug('PING (get)')
-        return "OK"
+        app.logger.info('PING (get)')
+        data = { 
+            "status" : "OK" 
+        } 
+        return jsonify(data) 
 
     data = json.loads(json.dumps(request.get_json()))
 
     if (request.method == 'POST' and (not data.get('url'))):
-        app.logger.debug('PING (post)')
-        return "OK"
-
+        app.logger.info('PING (post)')
+        data = {
+            "status" : "OK"
+        }
+        return jsonify(data)
     else:
         url = data["url"]
         event = data["event"] 
@@ -63,24 +73,25 @@ def webhook():
         app.logger.debug('event: ' + event)
 
         if event == "EXERCISE" or event == "SLEEP_WISE_CIRCADIAN_BEDTIME" or event == "SLEEP_WISE_ALERTNESS":
-          if "entity_id" in data: 
-              entity_id = data['entity_id']
+          if event == "EXERCISE":
+              exer=r.json()
+              sport=exer['detailed_sport_info']
+              filename = 'data/TEMP/'+event+"."+data['timestamp']+"."+sport+".json"
           else:
-              entity_id = ""
-          timestamp = data['timestamp']
-          app.logger.debug('entity id ' + entity_id)
-          filename = event+"."+timestamp+"."+entity_id+".json"
-          app.logger.debug('writing file ' + filename)
+              filename = 'data/TEMP/'+event+"."+data['timestamp']+".json"
+          app.logger.info('writing file ' + filename)
           with open(filename, "w") as outfile:
             json.dump(r.json(), outfile)
         else:
           date = data['date']
-          filename = event+"."+date+".json"
-          app.logger.debug('writing file ' + filename)
+          filename = 'data/TEMP/'+event+"."+date+".json"
+          app.logger.info('writing file ' + filename)
           with open(filename, "w") as outfile:
             json.dump(r.json(), outfile)
 
     return "OK"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=443, debug=True, ssl_context=('/home/pi/projects/accesslink/cert/putintail.crt', '/home/pi/projects/accesslink/cert/putintail-key.pem'))
+    #app.run(host='0.0.0.0',  port=80, debug=True)
+
