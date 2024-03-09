@@ -2,3 +2,6 @@
 *.json
 webhook.log
 __pycache__
+.well-known/
+cert/
+showlogs.sh
