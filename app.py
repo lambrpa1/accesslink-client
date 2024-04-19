@@ -64,7 +64,7 @@ def webhook():
         event = data["event"] 
 
         if event == "EXERCISE":
-          url = url + '?samples=true&zones=true'
+          url = url + '?samples=true&zones=true&route=true'
 
         r = requests.get(url, headers=headers)
 
