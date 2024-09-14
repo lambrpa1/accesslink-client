@@ -1,1 +1,1 @@
-nohup gunicorn --keyfile cert/putintail-key.pem --certfile cert/putintail.crt --bind 0.0.0.0:443 app:app > webhook.log 2>&1 &
+nohup gunicorn --keyfile cert/olento.key --certfile cert/olento.crt --bind 0.0.0.0:8443 app:app > webhook.log 2>&1 &

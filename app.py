@@ -1,8 +1,16 @@
 from flask import Flask, render_template, request, json, jsonify, send_from_directory
 from pathlib import Path
 
+import os
 import logging, requests
 import hmac, hashlib, base64
+
+
+certfile = os.environ.get('CERTFILE')
+certkey = os.environ.get('CERTKEY')
+
+print(certfile)
+print(certkey)
 
 app = Flask(__name__)
 
@@ -92,6 +100,5 @@ def webhook():
     return "OK"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=443, debug=True, ssl_context=('/home/pi/projects/accesslink/cert/putintail.crt', '/home/pi/projects/accesslink/cert/putintail-key.pem'))
-    #app.run(host='0.0.0.0',  port=80, debug=True)
+    app.run(host='0.0.0.0', port=8443, debug=True, ssl_context=(certfile, certkey))
 
