@@ -8,22 +8,22 @@ import hmac, hashlib, base64
 
 certfile = os.environ.get('CERTFILE')
 certkey = os.environ.get('CERTKEY')
+API_SECRET_KEY = os.environ.get('POLAR_API_SECRET_KEY')
+token=os.environ.get('POLAR_ACCESS_TOKEN')
 
-print(certfile)
-print(certkey)
+
+print("Cert file            : " + certfile)
+print("Cert key             : " + certkey)
+print("Access token         : " + token)
+print("Polar API secret key : " + API_SECRET_KEY) 
 
 app = Flask(__name__)
 
 def verify_webhook(data, hmac_header):
-    API_SECRET_KEY = '74b4b6e6-4a31-4f6a-975b-4ed73d94a68a'
     digest = hmac.new(API_SECRET_KEY.encode('utf-8'), data, digestmod=hashlib.sha256).digest()
     computed_hmac = digest.hex().encode('utf-8')
 
     return hmac.compare_digest(computed_hmac, hmac_header.encode('utf-8'))
-
-#@app.route('/.well-known/pki-validation/DA2D730BBBED0B95865340FEBCEB8298.txt')
-#def pkivalidate():
-#    return send_from_directory('/home/pi/projects/accesslink/.well-known/pki-validation/', 'DA2D730BBBED0B95865340FEBCEB8298.txt')
 
 @app.route('/')
 def index():
@@ -36,7 +36,6 @@ def webhook():
 
     if polarsignature is not None:
         app.logger.debug('Signature created by Polar : ' + polarsignature)
-        API_SECRET_KEY = '74b4b6e6-4a31-4f6a-975b-4ed73d94a68a'
         digest = hmac.new(API_SECRET_KEY.encode('utf-8'), request.get_data(), digestmod=hashlib.sha256).digest()
         app.logger.debug('Calculated signature       : ' + digest.hex())
 
@@ -47,7 +46,6 @@ def webhook():
         else:
             app.logger.debug('Webhook signature check failed')
 
-    token = '237a056de90ec7bfaba89af19302e391'
     headers = {
         'Accept': 'Application/json', 'Authorization': 'Bearer ' + token
     };
